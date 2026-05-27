@@ -128,6 +128,130 @@ func tampilSemuaFilm() {
 	garis()
 }
 
+// hapus film berdasarkan nomor urut
+func hapusFilm() {
+	fmt.Println()
+	garis()
+	fmt.Println("  >> HAPUS FILM")
+	garis()
+
+	if jumlahFilm == 0 {
+		fmt.Println("  Tidak ada film yang bisa dihapus.")
+		garis()
+		return
+	}
+
+	// tampilkan dulu filmnya biar user tau nomor berapa
+	for i := 0; i < jumlahFilm; i++ {
+		fmt.Printf("  [%d] %s (%.1f)\n", i+1, daftarFilm[i].judul, daftarFilm[i].rating)
+	}
+	fmt.Println()
+
+	nomor := bacaInt("  Masukkan nomor film yang dihapus: ")
+
+	if nomor < 1 || nomor > jumlahFilm {
+		fmt.Println("  [!] Nomor tidak valid.")
+		garis()
+		return
+	}
+
+	judulDihapus := daftarFilm[nomor-1].judul
+
+	// geser elemen ke kiri buat nutupin yang dihapus
+	for i := nomor - 1; i < jumlahFilm-1; i++ {
+		daftarFilm[i] = daftarFilm[i+1]
+	}
+	daftarFilm = daftarFilm[:jumlahFilm-1]
+	jumlahFilm--
+
+	fmt.Printf("\n  [OK] Film \"%s\" berhasil dihapus.\n", judulDihapus)
+	garis()
+}
+
+// sequential search cari film berdasarkan judul
+func cariFilm() {
+	fmt.Println()
+	garis()
+	fmt.Println("  >> CARI FILM (Sequential Search)")
+	garis()
+
+	if jumlahFilm == 0 {
+		fmt.Println("  Tidak ada film untuk dicari.")
+		garis()
+		return
+	}
+
+	keyword := bacaInput("  Masukkan judul film: ")
+	keyword = strings.ToLower(keyword)
+
+	ketemu := false
+	var hasil []int
+
+	// loop dari awal sampai akhir, cek satu-satu
+	for i := 0; i < jumlahFilm; i++ {
+		judulLower := strings.ToLower(daftarFilm[i].judul)
+		if strings.Contains(judulLower, keyword) {
+			hasil = append(hasil, i)
+			ketemu = true
+		}
+	}
+
+	fmt.Println()
+	if !ketemu {
+		fmt.Printf("  Film dengan kata kunci \"%s\" tidak ditemukan.\n", keyword)
+	} else {
+		fmt.Printf("  Ditemukan %d hasil:\n\n", len(hasil))
+		for _, idx := range hasil {
+			f := daftarFilm[idx]
+			fmt.Printf("  - %s | %s | %d | Rating: %.1f\n", f.judul, f.genre, f.tahun, f.rating)
+			fmt.Printf("    %s\n", f.deskripsi)
+			fmt.Println()
+		}
+	}
+	garis()
+}
+
+// selection sort urutkan film dari rating tertinggi ke terendah
+func selectionSort() {
+	fmt.Println()
+	garis()
+	fmt.Println("  >> URUTKAN FILM (Selection Sort by Rating)")
+	garis()
+
+	if jumlahFilm == 0 {
+		fmt.Println("  Tidak ada film untuk diurutkan.")
+		garis()
+		return
+	}
+
+	// proses selection sort - cari yang paling besar terus tukar
+	for i := 0; i < jumlahFilm-1; i++ {
+		idxMax := i
+		for j := i + 1; j < jumlahFilm; j++ {
+			if daftarFilm[j].rating > daftarFilm[idxMax].rating {
+				idxMax = j
+			}
+		}
+
+		// tukar posisi data film
+		if idxMax != i {
+			tmp := daftarFilm[i]
+			daftarFilm[i] = daftarFilm[idxMax]
+			daftarFilm[idxMax] = tmp
+		}
+	}
+
+	fmt.Println("  [OK] Film berhasil diurutkan dari rating tertinggi!")
+	fmt.Println()
+
+	// tampilkan hasil sorting
+	for i := 0; i < jumlahFilm; i++ {
+		f := daftarFilm[i]
+		fmt.Printf("  %d. %-25s %.1f/10\n", i+1, f.judul, f.rating)
+	}
+	garis()
+}
+
 // main - titik mulai program
 func main() {
 	// tampilkan header waktu program pertama jalan
