@@ -68,6 +68,9 @@ func tampilMenu() {
 	fmt.Println("++++++++++++++ CineReview ++++++++++++++")
 	fmt.Println("  [1] Tambah Film")
 	fmt.Println("  [2] Tampilkan Semua Film")
+	fmt.Println("  [3] Hapus Film")
+	fmt.Println("  [4] Cari Film (Sequential Search)")
+	fmt.Println("  [5] Urutkan Film by Rating (Selection Sort)")
 	fmt.Println("  [0] Keluar")
 	fmt.Println("========================================")
 }
@@ -271,6 +274,12 @@ func main() {
 			tambahFilm()
 		case "2":
 			tampilSemuaFilm()
+		case "3":
+			hapusFilm()
+		case "4":
+			cariFilm()
+		case "5":
+			selectionSort()
 		case "0":
 			fmt.Println()
 			fmt.Println("  Terima kasih sudah menggunakan CineReview!")
@@ -278,7 +287,7 @@ func main() {
 			fmt.Println()
 			os.Exit(0)
 		default:
-			fmt.Println("  [!] Menu tidak tersedia, pilih 0-2.")
+			fmt.Println("  [!] Menu tidak tersedia, pilih 0-5.")
 		}
 	}
 }
