@@ -71,6 +71,10 @@ func tampilMenu() {
 	fmt.Println("  [3] Hapus Film")
 	fmt.Println("  [4] Cari Film (Sequential Search)")
 	fmt.Println("  [5] Urutkan Film by Rating (Selection Sort)")
+	fmt.Println("  [6] Edit Data Film")
+	fmt.Println("  [7] Cari Film (Binary Search)")
+	fmt.Println("  [8] Urutkan Film by Tahun (Insertion Sort)")
+	fmt.Println("  [9] Statistik Film")
 	fmt.Println("  [0] Keluar")
 	fmt.Println("========================================")
 }
@@ -190,7 +194,7 @@ func cariFilm() {
 	ketemu := false
 	var hasil []int
 
-	// loop dari awal sampai akhir, cek satu-satu
+	// cari film satu per satu dari awal sampai akhir
 	for i := 0; i < jumlahFilm; i++ {
 		judulLower := strings.ToLower(daftarFilm[i].judul)
 		if strings.Contains(judulLower, keyword) {
@@ -255,6 +259,259 @@ func selectionSort() {
 	garis()
 }
 
+// edit data film yang sudah ada
+func editFilm() {
+	fmt.Println()
+	garis()
+	fmt.Println("  >> EDIT DATA FILM")
+	garis()
+
+	if jumlahFilm == 0 {
+		fmt.Println("  Tidak ada film yang bisa diedit.")
+		garis()
+		return
+	}
+
+	// tampilkan dulu semua film biar user tau mau edit nomor berapa
+	for i := 0; i < jumlahFilm; i++ {
+		fmt.Printf("  [%d] %s (%d) - %.1f/10\n", i+1, daftarFilm[i].judul, daftarFilm[i].tahun, daftarFilm[i].rating)
+	}
+	fmt.Println()
+
+	nomor := bacaInt("  Masukkan nomor film yang ingin diedit: ")
+
+	if nomor < 1 || nomor > jumlahFilm {
+		fmt.Println("  [!] Nomor tidak valid.")
+		garis()
+		return
+	}
+
+	// ambil data film yang mau diedit
+	idx := nomor - 1
+	fmt.Printf("\n  Editing film: %s\n", daftarFilm[idx].judul)
+	fmt.Println("  (Kosongkan input untuk tidak mengubah)")
+	fmt.Println()
+
+	// edit judul
+	judulBaru := bacaInput("  Judul baru     : ")
+	if judulBaru != "" {
+		daftarFilm[idx].judul = judulBaru
+	}
+
+	// edit genre
+	genreBaru := bacaInput("  Genre baru     : ")
+	if genreBaru != "" {
+		daftarFilm[idx].genre = genreBaru
+	}
+
+	// edit tahun - kalau diisi, coba parsing
+	tahunStr := bacaInput("  Tahun baru     : ")
+	if tahunStr != "" {
+		tahunBaru, err := strconv.Atoi(tahunStr)
+		if err != nil {
+			fmt.Println("  [!] Tahun tidak valid, tahun tidak diubah.")
+		} else {
+			daftarFilm[idx].tahun = tahunBaru
+		}
+	}
+
+	// edit deskripsi
+	deskripsiBaru := bacaInput("  Deskripsi baru : ")
+	if deskripsiBaru != "" {
+		daftarFilm[idx].deskripsi = deskripsiBaru
+	}
+
+	// edit rating - kalau diisi, coba parsing
+	ratingStr := bacaInput("  Rating baru    : ")
+	if ratingStr != "" {
+		ratingBaru, err := strconv.ParseFloat(ratingStr, 64)
+		if err != nil || ratingBaru < 0 || ratingBaru > 10 {
+			fmt.Println("  [!] Rating tidak valid (harus 0-10), rating tidak diubah.")
+		} else {
+			daftarFilm[idx].rating = ratingBaru
+		}
+	}
+
+	fmt.Printf("\n  [OK] Data film \"%s\" berhasil diperbarui!\n", daftarFilm[idx].judul)
+	garis()
+}
+
+// urutin dulu data berdasarkan judul sebelum binary search
+// pakai selection sort buat judul (ascending)
+func urutJudul() {
+	for i := 0; i < jumlahFilm-1; i++ {
+		idxMin := i
+		for j := i + 1; j < jumlahFilm; j++ {
+			// bandingkan judul huruf kecil semua
+			if strings.ToLower(daftarFilm[j].judul) < strings.ToLower(daftarFilm[idxMin].judul) {
+				idxMin = j
+			}
+		}
+		// tukar kalau ketemu yang lebih kecil
+		if idxMin != i {
+			tmp := daftarFilm[i]
+			daftarFilm[i] = daftarFilm[idxMin]
+			daftarFilm[idxMin] = tmp
+		}
+	}
+}
+
+// binary search cari film berdasarkan judul (harus sudah urut dulu)
+func binarySearch() {
+	fmt.Println()
+	garis()
+	fmt.Println("  >> CARI FILM (Binary Search)")
+	garis()
+
+	if jumlahFilm == 0 {
+		fmt.Println("  Tidak ada film untuk dicari.")
+		garis()
+		return
+	}
+
+	// urutkan dulu berdasarkan judul sebelum binary search
+	fmt.Println("  [*] Mengurutkan data berdasarkan judul...")
+	urutJudul()
+
+	keyword := bacaInput("  Masukkan judul film (harus sama persis): ")
+	keywordLower := strings.ToLower(keyword)
+
+	// proses binary search - cari di tengah-tengah terus
+	kiri := 0
+	kanan := jumlahFilm - 1
+	ketemu := -1
+
+	for kiri <= kanan {
+		tengah := (kiri + kanan) / 2
+		judulTengah := strings.ToLower(daftarFilm[tengah].judul)
+
+		if judulTengah == keywordLower {
+			// ketemu!
+			ketemu = tengah
+			break
+		} else if judulTengah < keywordLower {
+			// cari di sebelah kanan
+			kiri = tengah + 1
+		} else {
+			// cari di sebelah kiri
+			kanan = tengah - 1
+		}
+	}
+
+	fmt.Println()
+	if ketemu == -1 {
+		fmt.Printf("  Film \"%s\" tidak ditemukan.\n", keyword)
+		fmt.Println("  (Pastikan judul ditulis sama persis)")
+	} else {
+		f := daftarFilm[ketemu]
+		fmt.Println("  Film ditemukan!")
+		fmt.Println()
+		fmt.Printf("  Judul   : %s\n", f.judul)
+		fmt.Printf("  Genre   : %s\n", f.genre)
+		fmt.Printf("  Tahun   : %d\n", f.tahun)
+		fmt.Printf("  Rating  : %.1f / 10\n", f.rating)
+		fmt.Printf("  Sinopsis: %s\n", f.deskripsi)
+	}
+	garis()
+}
+
+// insertion sort urutkan film berdasarkan tahun rilis dari yang paling lama
+func insertionSort() {
+	fmt.Println()
+	garis()
+	fmt.Println("  >> URUTKAN FILM (Insertion Sort by Tahun)")
+	garis()
+
+	if jumlahFilm == 0 {
+		fmt.Println("  Tidak ada film untuk diurutkan.")
+		garis()
+		return
+	}
+
+	// proses insertion sort - ambil satu-satu terus sisipkan ke posisi yang bener
+	for i := 1; i < jumlahFilm; i++ {
+		kunci := daftarFilm[i]
+		j := i - 1
+
+		// geser elemen yang lebih besar ke kanan
+		for j >= 0 && daftarFilm[j].tahun > kunci.tahun {
+			daftarFilm[j+1] = daftarFilm[j]
+			j--
+		}
+
+		// sisipkan kunci ke posisi yang tepat
+		daftarFilm[j+1] = kunci
+	}
+
+	fmt.Println("  [OK] Film berhasil diurutkan dari tahun terlama!")
+	fmt.Println()
+
+	// tampilkan hasil insertion sort
+	for i := 0; i < jumlahFilm; i++ {
+		f := daftarFilm[i]
+		fmt.Printf("  %d. %-25s %d  (%.1f/10)\n", i+1, f.judul, f.tahun, f.rating)
+	}
+	garis()
+}
+
+// tampilkan statistik semua film
+func statistikFilm() {
+	fmt.Println()
+	garis()
+	fmt.Println("  >> STATISTIK FILM")
+	garis()
+
+	if jumlahFilm == 0 {
+		fmt.Println("  Belum ada data film.")
+		garis()
+		return
+	}
+
+	// hitung rata-rata rating
+	totalRating := 0.0
+	for i := 0; i < jumlahFilm; i++ {
+		totalRating += daftarFilm[i].rating
+	}
+	rataRata := totalRating / float64(jumlahFilm)
+
+	fmt.Printf("  Total Film      : %d film\n", jumlahFilm)
+	fmt.Printf("  Rata-rata Rating: %.2f / 10\n", rataRata)
+	fmt.Println()
+
+	// hitung jumlah film tiap genre
+	// pakai dua slice paralel: satu buat nama genre, satu buat jumlahnya
+	var namaGenre []string
+	var jumlahPerGenre []int
+
+	for i := 0; i < jumlahFilm; i++ {
+		genre := strings.ToLower(daftarFilm[i].genre)
+		ditemukan := false
+
+		// cek apakah genre ini sudah ada di daftar
+		for j := 0; j < len(namaGenre); j++ {
+			if namaGenre[j] == genre {
+				jumlahPerGenre[j]++
+				ditemukan = true
+				break
+			}
+		}
+
+		// kalau genre baru, tambahkan ke daftar
+		if !ditemukan {
+			namaGenre = append(namaGenre, genre)
+			jumlahPerGenre = append(jumlahPerGenre, 1)
+		}
+	}
+
+	// tampilkan jumlah film per genre
+	fmt.Println("  Jumlah Film per Genre:")
+	for i := 0; i < len(namaGenre); i++ {
+		fmt.Printf("    - %-15s : %d film\n", namaGenre[i], jumlahPerGenre[i])
+	}
+
+	garis()
+}
+
 // main - titik mulai program
 func main() {
 	// tampilkan header waktu program pertama jalan
@@ -280,6 +537,14 @@ func main() {
 			cariFilm()
 		case "5":
 			selectionSort()
+		case "6":
+			editFilm()
+		case "7":
+			binarySearch()
+		case "8":
+			insertionSort()
+		case "9":
+			statistikFilm()
 		case "0":
 			fmt.Println()
 			fmt.Println("  Terima kasih sudah menggunakan CineReview!")
@@ -287,7 +552,7 @@ func main() {
 			fmt.Println()
 			os.Exit(0)
 		default:
-			fmt.Println("  [!] Menu tidak tersedia, pilih 0-5.")
+			fmt.Println("  [!] Menu tidak tersedia, pilih 0-9.")
 		}
 	}
 }
