@@ -17,8 +17,12 @@ type Film struct {
 	rating    float64
 }
 
-// variabel global daftar film dan jumlahnya
-var daftarFilm []Film
+// kapasitas maksimum film dan genre yang bisa disimpan
+const MAX_FILM = 100
+const MAX_GENRE = 50
+
+// variabel global daftar film dan jumlahnya (array statis)
+var daftarFilm [MAX_FILM]Film
 var jumlahFilm int = 0
 
 var reader = bufio.NewReader(os.Stdin)
@@ -79,12 +83,18 @@ func tampilMenu() {
 	fmt.Println("========================================")
 }
 
-// fungsi buat nambahin film baru ke slice
+// fungsi buat nambahin film baru ke array statis
 func tambahFilm() {
 	fmt.Println()
 	garis()
 	fmt.Println("  >> TAMBAH FILM BARU")
 	garis()
+
+	if jumlahFilm >= MAX_FILM {
+		fmt.Printf("  [!] Daftar film sudah penuh (maks %d film).\n", MAX_FILM)
+		garis()
+		return
+	}
 
 	var f Film
 
@@ -99,8 +109,8 @@ func tambahFilm() {
 	f.deskripsi = bacaInput("  Deskripsi      : ")
 	f.rating = bacaFloat("  Rating (0-10)  : ")
 
-	// masukkan film ke slice
-	daftarFilm = append(daftarFilm, f)
+	// masukkan film ke array statis
+	daftarFilm[jumlahFilm] = f
 	jumlahFilm++
 
 	fmt.Println()
@@ -168,7 +178,8 @@ func hapusFilm() {
 	for i := nomor - 1; i < jumlahFilm-1; i++ {
 		daftarFilm[i] = daftarFilm[i+1]
 	}
-	daftarFilm = daftarFilm[:jumlahFilm-1]
+	// kosongkan elemen terakhir dan kurangi jumlah
+	daftarFilm[jumlahFilm-1] = Film{}
 	jumlahFilm--
 
 	fmt.Printf("\n  [OK] Film \"%s\" berhasil dihapus.\n", judulDihapus)
@@ -192,13 +203,15 @@ func cariFilm() {
 	keyword = strings.ToLower(keyword)
 
 	ketemu := false
-	var hasil []int
+	var hasil [MAX_FILM]int
+	jumlahHasil := 0
 
 	// cari film satu per satu dari awal sampai akhir
 	for i := 0; i < jumlahFilm; i++ {
 		judulLower := strings.ToLower(daftarFilm[i].judul)
 		if strings.Contains(judulLower, keyword) {
-			hasil = append(hasil, i)
+			hasil[jumlahHasil] = i
+			jumlahHasil++
 			ketemu = true
 		}
 	}
@@ -207,9 +220,9 @@ func cariFilm() {
 	if !ketemu {
 		fmt.Printf("  Film dengan kata kunci \"%s\" tidak ditemukan.\n", keyword)
 	} else {
-		fmt.Printf("  Ditemukan %d hasil:\n\n", len(hasil))
-		for _, idx := range hasil {
-			f := daftarFilm[idx]
+		fmt.Printf("  Ditemukan %d hasil:\n\n", jumlahHasil)
+		for i := 0; i < jumlahHasil; i++ {
+			f := daftarFilm[hasil[i]]
 			fmt.Printf("  - %s | %s | %d | Rating: %.1f\n", f.judul, f.genre, f.tahun, f.rating)
 			fmt.Printf("    %s\n", f.deskripsi)
 			fmt.Println()
@@ -479,16 +492,17 @@ func statistikFilm() {
 	fmt.Println()
 
 	// hitung jumlah film tiap genre
-	// pakai dua slice paralel: satu buat nama genre, satu buat jumlahnya
-	var namaGenre []string
-	var jumlahPerGenre []int
+	// pakai dua array statis paralel: satu buat nama genre, satu buat jumlahnya
+	var namaGenre [MAX_GENRE]string
+	var jumlahPerGenre [MAX_GENRE]int
+	jumlahGenre := 0
 
 	for i := 0; i < jumlahFilm; i++ {
 		genre := strings.ToLower(daftarFilm[i].genre)
 		ditemukan := false
 
 		// cek apakah genre ini sudah ada di daftar
-		for j := 0; j < len(namaGenre); j++ {
+		for j := 0; j < jumlahGenre; j++ {
 			if namaGenre[j] == genre {
 				jumlahPerGenre[j]++
 				ditemukan = true
@@ -496,16 +510,17 @@ func statistikFilm() {
 			}
 		}
 
-		// kalau genre baru, tambahkan ke daftar
-		if !ditemukan {
-			namaGenre = append(namaGenre, genre)
-			jumlahPerGenre = append(jumlahPerGenre, 1)
+		// kalau genre baru, tambahkan ke daftar array
+		if !ditemukan && jumlahGenre < MAX_GENRE {
+			namaGenre[jumlahGenre] = genre
+			jumlahPerGenre[jumlahGenre] = 1
+			jumlahGenre++
 		}
 	}
 
 	// tampilkan jumlah film per genre
 	fmt.Println("  Jumlah Film per Genre:")
-	for i := 0; i < len(namaGenre); i++ {
+	for i := 0; i < jumlahGenre; i++ {
 		fmt.Printf("    - %-15s : %d film\n", namaGenre[i], jumlahPerGenre[i])
 	}
 
