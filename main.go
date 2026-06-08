@@ -118,19 +118,99 @@ func tambahFilm() {
 	garis()
 }
 
+// insertionSortJudulAZ mengurutkan daftarFilm secara ascending (A-Z) berdasarkan judul
+// menggunakan algoritma Insertion Sort:
+// - ambil elemen ke-i sebagai kunci (key)
+// - geser elemen sebelumnya ke kanan selama masih lebih besar dari kunci
+// - sisipkan kunci ke posisi yang tepat
+func insertionSortJudulAZ() {
+	// mulai dari elemen kedua (indeks 1), elemen pertama dianggap sudah terurut
+	for i := 1; i < jumlahFilm; i++ {
+		// simpan elemen saat ini sebagai kunci yang akan disisipkan
+		kunci := daftarFilm[i]
+		j := i - 1
+
+		// geser elemen-elemen yang judulnya lebih besar dari kunci ke posisi kanan
+		// perbandingan judul menggunakan huruf kecil agar tidak case-sensitive
+		for j >= 0 && strings.ToLower(daftarFilm[j].judul) > strings.ToLower(kunci.judul) {
+			daftarFilm[j+1] = daftarFilm[j]
+			j--
+		}
+
+		// sisipkan kunci ke posisi yang tepat (setelah semua elemen yang lebih kecil)
+		daftarFilm[j+1] = kunci
+	}
+}
+
+// insertionSortJudulZA mengurutkan daftarFilm secara descending (Z-A) berdasarkan judul
+// menggunakan algoritma Insertion Sort:
+// - ambil elemen ke-i sebagai kunci (key)
+// - geser elemen sebelumnya ke kanan selama masih lebih kecil dari kunci
+// - sisipkan kunci ke posisi yang tepat
+func insertionSortJudulZA() {
+	// mulai dari elemen kedua (indeks 1), elemen pertama dianggap sudah terurut
+	for i := 1; i < jumlahFilm; i++ {
+		// simpan elemen saat ini sebagai kunci yang akan disisipkan
+		kunci := daftarFilm[i]
+		j := i - 1
+
+		// geser elemen-elemen yang judulnya lebih kecil dari kunci ke posisi kanan
+		// perbandingan judul menggunakan huruf kecil agar tidak case-sensitive
+		for j >= 0 && strings.ToLower(daftarFilm[j].judul) < strings.ToLower(kunci.judul) {
+			daftarFilm[j+1] = daftarFilm[j]
+			j--
+		}
+
+		// sisipkan kunci ke posisi yang tepat (setelah semua elemen yang lebih besar)
+		daftarFilm[j+1] = kunci
+	}
+}
+
 // procedure buat nampilin semua data film yang ada
+// sebelum ditampilkan, user diminta memilih urutan: A-Z atau Z-A
 func tampilSemuaFilm() {
 	fmt.Println()
 	garis()
-	fmt.Println("  >> DAFTAR FILM")
+	fmt.Println("  >> TAMPILKAN FILM")
 	garis()
 
+	// cek apakah ada film yang tersimpan
 	if jumlahFilm == 0 {
 		fmt.Println("  Belum ada film yang tersimpan.")
 		garis()
 		return
 	}
 
+	// tampilkan submenu pilihan urutan tampilan film
+	fmt.Println("  [1] Tampilkan film berdasarkan judul A-Z")
+	fmt.Println("  [2] Tampilkan film berdasarkan judul Z-A")
+	fmt.Println()
+	pilihan := bacaInt("  Pilih urutan tampilan: ")
+
+	switch pilihan {
+	case 1:
+		// urutkan film dengan Insertion Sort ascending (A-Z)
+		insertionSortJudulAZ()
+		fmt.Println()
+		fmt.Println("  [OK] Film diurutkan A-Z berdasarkan judul.")
+	case 2:
+		// urutkan film dengan Insertion Sort descending (Z-A)
+		insertionSortJudulZA()
+		fmt.Println()
+		fmt.Println("  [OK] Film diurutkan Z-A berdasarkan judul.")
+	default:
+		// pilihan tidak valid, tampilkan pesan dan batalkan
+		fmt.Println("  [!] Pilihan tidak valid.")
+		garis()
+		return
+	}
+
+	fmt.Println()
+	garis()
+	fmt.Println("  >> DAFTAR FILM")
+	garis()
+
+	// tampilkan seluruh data film yang sudah terurut
 	for i := 0; i < jumlahFilm; i++ {
 		f := daftarFilm[i]
 		fmt.Printf("  [%d] %s\n", i+1, f.judul)
